@@ -7,13 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Dto\" />
     <Folder Include="Extensions\" />
-    <Folder Include="FluentValidation\" />
     <Folder Include="Hubs\" />
-    <Folder Include="Mapping\" />
-    <Folder Include="Services\Implementation\" />
-    <Folder Include="Services\Interfaces\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="11.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.16" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VeeMessenger.Data\VeeMessenger.Data.csproj" />
   </ItemGroup>
 
 </Project>

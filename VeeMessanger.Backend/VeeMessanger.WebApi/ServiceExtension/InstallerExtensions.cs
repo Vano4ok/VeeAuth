@@ -13,6 +13,6 @@
                 .ToList();
 
             installers.ForEach(installer => installer.InstallServices(services, configuration));
-        } 
+        }
     }
 }

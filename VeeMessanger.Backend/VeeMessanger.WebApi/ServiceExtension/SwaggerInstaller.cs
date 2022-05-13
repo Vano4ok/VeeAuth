@@ -7,7 +7,7 @@ namespace VeeMessanger.WebApi.ServiceExtension
     {
         public void InstallServices(IServiceCollection services, IConfiguration configuration)
         {
-            services.AddSwaggerGen(options=>
+            services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
                 {
