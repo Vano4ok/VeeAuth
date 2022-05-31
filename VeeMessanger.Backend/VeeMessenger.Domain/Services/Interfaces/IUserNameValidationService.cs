@@ -4,6 +4,6 @@ namespace VeeMessenger.Domain.Services.Interfaces
 {
     public interface IUserNameValidationService
     {
-        public IEnumerable<AuthenticationError> IsValid(string userName);
+        public IEnumerable<Error> IsValid(string userName);
     }
 }

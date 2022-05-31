@@ -7,8 +7,8 @@ namespace VeeMessenger.Domain.Services.Interfaces
     {
         public Task<RefreshSession> CreateRefreshSessionAsync(Guid userId, string fingerPrint);
 
-        public Task<AuthenticationErrorWithRefreshSession> UpdateRefreshSessionAsync(Guid refreshSessionId, string fingerPrint);
+        public Task<Result<RefreshSession>> UpdateRefreshSessionAsync(Guid refreshSessionId, string fingerPrint);
 
-        public Task<IEnumerable<AuthenticationError>> DeleteRefreshSessionAsync(Guid refreshSessionId);
+        public Task<IEnumerable<Error>> DeleteRefreshSessionAsync(Guid refreshSessionId);
     }
 }

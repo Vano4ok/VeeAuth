@@ -16,25 +16,28 @@ namespace VeeMessenger.Domain.Services.Implementation
         {
             this.jwtSettings = jwtSettings;
         }
-
-        public string GetAccessToken(User user)
+       
+        public async Task<string> GetAccessToken(User user)
         {
-            List<Claim> claims = new List<Claim>()
+            return await Task.Run(() =>
             {
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email)
-            };
+                List<Claim> claims = new List<Claim>()
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Email, user.Email)
+                };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.AccessTokenSecret));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.AccessTokenSecret));
+                var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            JwtSecurityToken securityToken = new(jwtSettings.Issuer, jwtSettings.Audience,
-                claims,
-                DateTime.UtcNow,
-                DateTime.UtcNow.AddMinutes(jwtSettings.AccessTokenExpirationMinutes),
-                credentials);
+                JwtSecurityToken securityToken = new(jwtSettings.Issuer, jwtSettings.Audience,
+                    claims,
+                    DateTime.UtcNow,
+                    DateTime.UtcNow.AddMinutes(jwtSettings.AccessTokenExpirationMinutes),
+                    credentials);
 
-            return new JwtSecurityTokenHandler().WriteToken(securityToken);
+                return new JwtSecurityTokenHandler().WriteToken(securityToken);
+            });          
         }
     }
 }

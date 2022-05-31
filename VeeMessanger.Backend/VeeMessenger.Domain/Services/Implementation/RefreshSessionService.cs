@@ -36,15 +36,15 @@ namespace VeeMessenger.Domain.Services.Implementation
             return refreshSession;
         }
 
-        public async Task<AuthenticationErrorWithRefreshSession> UpdateRefreshSessionAsync(Guid refreshSessionId, string fingerPrint)
+        public async Task<Result<RefreshSession>> UpdateRefreshSessionAsync(Guid refreshSessionId, string fingerPrint)
         {
-            AuthenticationErrorWithRefreshSession result = new AuthenticationErrorWithRefreshSession();
+            Result<RefreshSession> result = new Result<RefreshSession>();
 
             var refreshSession = await refreshSessionRepository.GetByIdAsync(refreshSessionId);
 
             if (refreshSession is null)
             {
-                result.AuthenticationError = errorDescriberService.RefreshSessionIsNull();
+                result.AddErrors(errorDescriberService.RefreshSessionIsNull());
 
                 return result;
             }
@@ -55,25 +55,25 @@ namespace VeeMessenger.Domain.Services.Implementation
 
             if (DateTime.Now > refreshSession.Expires)
             {
-                result.AuthenticationError = errorDescriberService.RefreshSessionExpired();
+                result.AddErrors(errorDescriberService.RefreshSessionExpired());
 
                 return result;
             }
 
             if (!fingerPrint.Equals(refreshSession.FingerPrint))
             {
-                result.AuthenticationError = errorDescriberService.InvalidFingerPrint();
+                result.AddErrors(errorDescriberService.InvalidFingerPrint());
                 return result;
             }
 
-            result.RefreshSession = await CreateRefreshSessionAsync(refreshSession.UserId, fingerPrint);
+            result.Data = await CreateRefreshSessionAsync(refreshSession.UserId, fingerPrint);
 
             return result;
         }
 
-        public async Task<IEnumerable<AuthenticationError>> DeleteRefreshSessionAsync(Guid refreshSessionId)
+        public async Task<IEnumerable<Error>> DeleteRefreshSessionAsync(Guid refreshSessionId)
         {
-            List<AuthenticationError> authenticationErrors = new List<AuthenticationError>();
+            List<Error> authenticationErrors = new List<Error>();
 
             var refreshSession = await refreshSessionRepository.GetByIdAsync(refreshSessionId);
 

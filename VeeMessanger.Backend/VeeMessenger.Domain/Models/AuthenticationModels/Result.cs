@@ -1,8 +1,8 @@
 ﻿namespace VeeMessenger.Domain.Models.AuthenticationModels
 {
-    public class AuthenticationResult
+    public class Result
     {
-        private List<AuthenticationError> errors = new List<AuthenticationError>();
+        private List<Error> errors = new List<Error>();
 
         public bool Succeeded
         {
@@ -20,7 +20,7 @@
             }
         }
 
-        public IEnumerable<AuthenticationError> Errors
+        public IEnumerable<Error> Errors
         {
             get
             {
@@ -28,7 +28,7 @@
             }
         }
 
-        public void AddErrors(IEnumerable<AuthenticationError> errorsArray)
+        public void AddErrors(IEnumerable<Error> errorsArray)
         {
             if (errorsArray is not null)
             {
@@ -36,7 +36,7 @@
             }
         }
 
-        public void AddErrors(params AuthenticationError[] errorsArray)
+        public void AddErrors(params Error[] errorsArray)
         {
             if (errorsArray is not null)
             {
@@ -50,5 +50,17 @@
                "Succeeded" :
                string.Format("{0} : {1}", "Failed", string.Join(",", Errors.Select(x => x.Code).ToList()));
         }
+    }
+
+    public class Result<T> : Result
+    {
+        public T Data { get; set; }
+
+        public Result(T data)
+        {
+            Data = data;
+        }
+
+        public Result() { }
     }
 }

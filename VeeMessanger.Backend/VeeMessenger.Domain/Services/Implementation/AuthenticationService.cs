@@ -2,6 +2,7 @@
 using VeeMessenger.Data.Constants;
 using VeeMessenger.Data.Entities;
 using VeeMessenger.Data.Infrastructure;
+using VeeMessenger.Domain.Dto;
 using VeeMessenger.Domain.Models.AuthenticationModels;
 using VeeMessenger.Domain.Models.EmailModels;
 using VeeMessenger.Domain.Services.Interfaces;
@@ -33,9 +34,9 @@ namespace VeeMessenger.Domain.Services.Implementation
             this.refreshSessionService = refreshSessionService;
         }
 
-        public async Task<AuthenticationResult> CreateUserAsync(User user, string password)
+        public async Task<Result> CreateUserAsync(User user, string password)
         {
-            AuthenticationResult authenticationResult = new AuthenticationResult();
+            Result authenticationResult = new Result();
 
             if (await userRepository.Query().AnyAsync(u => u.UserName.ToLower().Equals(user.UserName.ToLower())))
             {
@@ -61,7 +62,7 @@ namespace VeeMessenger.Domain.Services.Implementation
             EmailRequest emailRequest = new EmailRequest()
             {
                 ToEmail = user.Email,
-                Subject = "VeeMessanger",
+                Subject = "VeeRegistration",
                 Body = $"Code : {user.UserTempData.EmailConfirmCode}"
             };
 
@@ -76,9 +77,9 @@ namespace VeeMessenger.Domain.Services.Implementation
             return authenticationResult;
         }
 
-        public async Task<AuthenticationResultWithTokens> ConfrimEmailAsync(string email, string code, string fingerPrint)
+        public async Task<Result<TokensDto>> ConfrimEmailAsync(string email, string code, string fingerPrint)
         {
-            AuthenticationResultWithTokens result = new AuthenticationResultWithTokens();
+            Result<TokensDto> result = new Result<TokensDto>(new TokensDto());
 
             var user = await userRepository
                 .Query()
@@ -88,14 +89,14 @@ namespace VeeMessenger.Domain.Services.Implementation
 
             if (user is null)
             {
-                result.AuthenticationResult.AddErrors(errorDescriberService.UserWithSuchEmailDoesntExist(email));
+                result.AddErrors(errorDescriberService.UserWithSuchEmailDoesntExist(email));
 
                 return result;
             }
 
             if (user.EmailConfirmed)
             {
-                result.AuthenticationResult.AddErrors(errorDescriberService.UserIsAlreadyConfirmed(user.Email));
+                result.AddErrors(errorDescriberService.UserIsAlreadyConfirmed(user.Email));
 
                 return result;
             }
@@ -106,13 +107,13 @@ namespace VeeMessenger.Domain.Services.Implementation
 
                 await userRepository.SaveChangesAsync();
 
-                result.RefreshSession = await refreshSessionService.CreateRefreshSessionAsync(user.Id, fingerPrint);
-                result.AccessToken = accessTokenService.GetAccessToken(user);
+                result.Data.RefreshSession = await refreshSessionService.CreateRefreshSessionAsync(user.Id, fingerPrint);
+                result.Data.AccessToken = await accessTokenService.GetAccessToken(user);
 
                 return result;
             }
 
-            result.AuthenticationResult.AddErrors(errorDescriberService.CodeIsinvalid(code));
+            result.AddErrors(errorDescriberService.CodeIsinvalid(code));
 
             user.UserTempData.NumbersOfAttempts++;
 
@@ -120,7 +121,7 @@ namespace VeeMessenger.Domain.Services.Implementation
             {
                 userRepository.Delete(user);
 
-                result.AuthenticationResult.AddErrors(errorDescriberService.RegistrationFailed());
+                result.AddErrors(errorDescriberService.RegistrationFailed());
             }
 
             await userRepository.SaveChangesAsync();
@@ -128,33 +129,34 @@ namespace VeeMessenger.Domain.Services.Implementation
             return result;
         }
 
-        public async Task<AuthenticationResultWithTokens> LoginAsync(string userName, string password, string fingerPrint)
+        public async Task<Result<TokensDto>> LoginAsync(string userName, string password, string fingerPrint)
         {
-            AuthenticationResultWithTokens result = new AuthenticationResultWithTokens();
+            Result<TokensDto> result = new Result<TokensDto>(new TokensDto());
 
             var user = await userRepository
                 .Query()
                 .Include(u => u.UserTempData)
+                .Include(u => u.RefreshSessions)
                 .Where(u => u.UserName.Equals(userName))
                 .FirstOrDefaultAsync();
 
             if (user is null)
             {
-                result.AuthenticationResult.AddErrors(errorDescriberService.UsernameDoesNotExist(userName));
+                result.AddErrors(errorDescriberService.UsernameDoesNotExist(userName));
 
                 return result;
             }
 
             if (user.LockOutDate > DateTime.Now)
             {
-                result.AuthenticationResult.AddErrors(errorDescriberService.UserIsBlockedForLogin(user.LockOutDate));
+                result.AddErrors(errorDescriberService.UserIsBlockedForLogin(user.LockOutDate));
 
                 return result;
             }
 
             if (!passwordHasherService.Check(user.PasswordHash, password))
             {
-                result.AuthenticationResult.AddErrors(errorDescriberService.PasswordIsInvalid());
+                result.AddErrors(errorDescriberService.PasswordIsInvalid());
 
                 user.UserTempData.NumbersOfAttempts++;
 
@@ -164,7 +166,7 @@ namespace VeeMessenger.Domain.Services.Implementation
 
                     user.UserTempData.NumbersOfAttempts = 0;
 
-                    result.AuthenticationResult.AddErrors(errorDescriberService.UserIsBlockedForLogin(user.LockOutDate));
+                    result.AddErrors(errorDescriberService.UserIsBlockedForLogin(user.LockOutDate));
                 }
 
                 await userRepository.SaveChangesAsync();
@@ -174,55 +176,53 @@ namespace VeeMessenger.Domain.Services.Implementation
 
             if (!user.EmailConfirmed)
             {
-                result.AuthenticationResult.AddErrors(errorDescriberService.EmailIsNotConfirmed(user.Email));
+                result.AddErrors(errorDescriberService.EmailIsNotConfirmed(user.Email));
 
                 return result;
             }
 
-            result.RefreshSession = await refreshSessionService.CreateRefreshSessionAsync(user.Id, fingerPrint);
-            result.AccessToken = accessTokenService.GetAccessToken(user);
+            if (user.RefreshSessions.Any(r => r.FingerPrint.Equals(fingerPrint)))
+            {
+                result.AddErrors(errorDescriberService.FingerPrintIsExist());
+
+                return result;
+            }
+
+            result.Data.RefreshSession = await refreshSessionService.CreateRefreshSessionAsync(user.Id, fingerPrint);
+            result.Data.AccessToken = await accessTokenService.GetAccessToken(user);
 
             return result;
         }
 
-        public async Task<AuthenticationResult> LogoutAsync(Guid refreshSessionId)
+        public async Task<Result> LogoutAsync(Guid refreshSessionId)
         {
-            AuthenticationResult result = new AuthenticationResult();
+            Result result = new Result();
 
             result.AddErrors(await refreshSessionService.DeleteRefreshSessionAsync(refreshSessionId));
 
             return result;
         }
 
-        public async Task<AuthenticationResultWithTokens> RefreshSessionAsync(Guid refreshSessionId, string fingerPrint)
+        public async Task<Result<TokensDto>> RefreshSessionAsync(Guid refreshSessionId, string fingerPrint)
         {
-            AuthenticationResultWithTokens result = new AuthenticationResultWithTokens();
+            Result<TokensDto> result = new Result<TokensDto>(new TokensDto());
 
             var updateResult = await refreshSessionService.UpdateRefreshSessionAsync(refreshSessionId, fingerPrint);
 
-            if (updateResult.AuthenticationError is not null)
+            if (updateResult.Failed)
             {
-                result.AuthenticationResult.AddErrors(updateResult.AuthenticationError);
+                result.AddErrors(updateResult.Errors);
 
                 return result;
             }
 
-            if (updateResult.RefreshSession is not null)
-            {
-                result.RefreshSession = updateResult.RefreshSession;
+            result.Data.RefreshSession = updateResult.Data;
 
-                var user = await userRepository.GetByIdAsync(updateResult.RefreshSession.UserId);
+            var user = await userRepository.GetByIdAsync(updateResult.Data.UserId);
 
-                result.AccessToken = accessTokenService.GetAccessToken(user);
+            result.Data.AccessToken = await accessTokenService.GetAccessToken(user);
 
-                return result;
-            }
-
-            result.AuthenticationResult.AddErrors(/*add error*/);
-
-            return result;
+            return result;           
         }
-
-
     }
 }

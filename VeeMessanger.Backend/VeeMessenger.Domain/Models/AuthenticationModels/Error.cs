@@ -1,6 +1,6 @@
 ﻿namespace VeeMessenger.Domain.Models.AuthenticationModels
 {
-    public class AuthenticationError
+    public class Error
     {
         public string Code { get; set; } = string.Empty;
 

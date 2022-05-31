@@ -12,9 +12,9 @@ namespace VeeMessenger.Domain.Services.Implementation
             this.errorDescriberService = errorDescriberService;
         }
 
-        public IEnumerable<AuthenticationError> IsValid(string password)
+        public IEnumerable<Error> IsValid(string password)
         {
-            List<AuthenticationError> errors = new List<AuthenticationError>();
+            List<Error> errors = new List<Error>();
 
             if (string.IsNullOrWhiteSpace(password) || password.Length <= 10)
             {

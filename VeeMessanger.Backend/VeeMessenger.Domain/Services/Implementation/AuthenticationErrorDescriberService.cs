@@ -5,180 +5,189 @@ namespace VeeMessenger.Domain.Services.Implementation
 {
     public class AuthenticationErrorDescriberService : IAuthenticationErrorDescriberService
     {
-        public AuthenticationError DuplicateUserName(string userName)
+        public Error DuplicateUserName(string userName)
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(DuplicateUserName),
                 Description = $"Username '{userName}' is already taken."
             };
         }
 
-        public AuthenticationError HasIllegalCharacters(string userName)
+        public Error HasIllegalCharacters(string userName)
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(HasIllegalCharacters),
                 Description = $"Username '{userName}' can contain only a-z, numbers (0-9) and symbols '.', '_'."
             };
         }
 
-        public AuthenticationError UsernameDoesNotExist(string userName)
+        public Error UsernameDoesNotExist(string userName)
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(UsernameDoesNotExist),
                 Description = $"Username '{userName}' does not exist."
             };
         }
 
-        public AuthenticationError DuplicateEmail(string email)
+        public Error DuplicateEmail(string email)
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(DuplicateEmail),
                 Description = $"Email '{email}' is already taken."
             };
         }
 
-        public AuthenticationError UserWithSuchEmailDoesntExist(string email)
+        public Error UserWithSuchEmailDoesntExist(string email)
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(UserWithSuchEmailDoesntExist),
                 Description = $"User with email '{email}' doesn't exist."
             };
         }
 
-        public AuthenticationError UserIsAlreadyConfirmed(string userName)
+        public Error UserIsAlreadyConfirmed(string userName)
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(UserIsAlreadyConfirmed),
                 Description = $"User '{userName}' is already confirmed."
             };
         }
 
-        public AuthenticationError CodeIsinvalid(string code)
+        public Error CodeIsinvalid(string code)
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(CodeIsinvalid),
                 Description = $"Code '{code}' is invalid."
             };
         }
 
-        public AuthenticationError RegistrationFailed()
+        public Error RegistrationFailed()
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(CodeIsinvalid),
                 Description = $"Registration failed."
             };
         }
 
-        public AuthenticationError PasswordMismatch()
+        public Error PasswordMismatch()
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(PasswordMismatch),
                 Description = "Incorrect password."
             };
         }
 
-        public AuthenticationError PasswordTooShort(int RequiredLength)
+        public Error PasswordTooShort(int RequiredLength)
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(PasswordTooShort),
                 Description = $"Password must be at least {RequiredLength} characters."
             };
         }
 
-        public AuthenticationError PasswordRequiresNonAlphanumeric()
+        public Error PasswordRequiresNonAlphanumeric()
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(PasswordRequiresNonAlphanumeric),
                 Description = "Password must have at least one non alphanumeric character."
             };
         }
 
-        public AuthenticationError PasswordRequiresUpper()
+        public Error PasswordRequiresUpper()
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(PasswordRequiresUpper),
                 Description = "Password must have at least one uppercase ('A'-'Z')."
             };
         }
 
-        public AuthenticationError PasswordRequiresLower()
+        public Error PasswordRequiresLower()
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(PasswordRequiresLower),
                 Description = "Password must have at least one lowercase ('a'-'z')."
             };
         }
 
-        public AuthenticationError PasswordRequiresDigit()
+        public Error PasswordRequiresDigit()
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(PasswordRequiresDigit),
                 Description = "Password must have at least one digit ('0'-'9')."
             };
         }
 
-        public AuthenticationError PasswordIsInvalid()
+        public Error PasswordIsInvalid()
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(PasswordIsInvalid),
                 Description = "Password is invalid."
             };
         }
 
-        public AuthenticationError EmailIsNotConfirmed(string email)
+        public Error EmailIsNotConfirmed(string email)
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(EmailIsNotConfirmed),
                 Description = $"User with email {email} is not confirmed."
             };
         }
 
-        public AuthenticationError UserIsBlockedForLogin(DateTime dateTime)
+        public Error UserIsBlockedForLogin(DateTime dateTime)
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(UserIsBlockedForLogin),
                 Description = $"User is blocked for login until {dateTime.ToString("g")}."
             };
         }
 
-        public AuthenticationError RefreshSessionIsNull()
+        public Error RefreshSessionIsNull()
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(RefreshSessionIsNull),
                 Description = $"Refresh session is null."
             };
         }
 
-        public AuthenticationError RefreshSessionExpired()
+        public Error RefreshSessionExpired()
         {
-            return new AuthenticationError
+            return new Error
             {
                 Code = nameof(RefreshSessionExpired),
                 Description = $"Refresh session expired."
             };
         }
 
-        public AuthenticationError InvalidFingerPrint()
+        public Error FingerPrintIsExist()
         {
-            return new AuthenticationError
+            return new Error
+            {
+                Code = nameof(FingerPrintIsExist),
+                Description = $"You are already login."
+            };
+        }
+
+        public Error InvalidFingerPrint()
+        {
+            return new Error
             {
                 Code = nameof(InvalidFingerPrint),
                 Description = $"FingerPrint is invalid."

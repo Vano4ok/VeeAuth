@@ -4,44 +4,46 @@ namespace VeeMessenger.Domain.Services.Interfaces
 {
     public interface IAuthenticationErrorDescriberService
     {
-        public AuthenticationError PasswordMismatch();
+        public Error PasswordMismatch();
 
-        public AuthenticationError DuplicateUserName(string userName);
+        public Error DuplicateUserName(string userName);
 
-        public AuthenticationError HasIllegalCharacters(string userName);
+        public Error HasIllegalCharacters(string userName);
 
-        public AuthenticationError UsernameDoesNotExist(string userName);
+        public Error UsernameDoesNotExist(string userName);
 
-        public AuthenticationError DuplicateEmail(string email);
+        public Error DuplicateEmail(string email);
 
-        public AuthenticationError UserWithSuchEmailDoesntExist(string email);
+        public Error UserWithSuchEmailDoesntExist(string email);
 
-        public AuthenticationError UserIsAlreadyConfirmed(string userName);
+        public Error UserIsAlreadyConfirmed(string userName);
 
-        public AuthenticationError CodeIsinvalid(string code);
+        public Error CodeIsinvalid(string code);
 
-        public AuthenticationError RegistrationFailed();
+        public Error RegistrationFailed();
 
-        public AuthenticationError PasswordTooShort(int RequiredLength);
+        public Error PasswordTooShort(int RequiredLength);
 
-        public AuthenticationError PasswordRequiresNonAlphanumeric();
+        public Error PasswordRequiresNonAlphanumeric();
 
-        public AuthenticationError PasswordRequiresUpper();
+        public Error PasswordRequiresUpper();
 
-        public AuthenticationError PasswordRequiresLower();
+        public Error PasswordRequiresLower();
 
-        public AuthenticationError PasswordRequiresDigit();
+        public Error PasswordRequiresDigit();
 
-        public AuthenticationError PasswordIsInvalid();
+        public Error PasswordIsInvalid();
 
-        public AuthenticationError EmailIsNotConfirmed(string email);
+        public Error EmailIsNotConfirmed(string email);
 
-        public AuthenticationError UserIsBlockedForLogin(DateTime dateTime);
+        public Error UserIsBlockedForLogin(DateTime dateTime);
 
-        public AuthenticationError RefreshSessionIsNull();
+        public Error RefreshSessionIsNull();
 
-        public AuthenticationError RefreshSessionExpired();
+        public Error RefreshSessionExpired();
 
-        public AuthenticationError InvalidFingerPrint();
+        public Error FingerPrintIsExist();
+
+        public Error InvalidFingerPrint();
     }
 }

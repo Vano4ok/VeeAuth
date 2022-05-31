@@ -13,9 +13,9 @@ namespace VeeMessenger.Domain.Services.Implementation
             this.errorDescriberService = errorDescriberService;
         }
 
-        public IEnumerable<AuthenticationError> IsValid(string userName)
+        public IEnumerable<Error> IsValid(string userName)
         {
-            List<AuthenticationError> errors = new List<AuthenticationError>();
+            List<Error> errors = new List<Error>();
 
             if (!Regex.IsMatch(userName, @"^[a-zA-Z0-9_.]+$"))
             {

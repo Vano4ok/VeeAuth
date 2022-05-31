@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using VeeMessanger.WebApi.Extensions;
 using VeeMessenger.Data.Entities;
 using VeeMessenger.Domain.Dto;
 using VeeMessenger.Domain.Dto.User;
@@ -34,7 +35,9 @@ namespace VeeMessanger.WebApi.Controllers
                 return Ok("We have sent you a confirmation code <3");
             }
 
-            return BadRequest(result.Errors);
+            AddModelErrors(result.Errors);
+
+            return BadRequest(ModelState.GenerateValidation());
         }
 
         [HttpPost]
@@ -43,14 +46,16 @@ namespace VeeMessanger.WebApi.Controllers
         {
             var result = await authenticationService.ConfrimEmailAsync(userDto.Email, userDto.Code, userDto.FingerPrint);
 
-            if (result.AuthenticationResult.Succeeded)
+            if (result.Succeeded)
             {
-                SetRefreshToken(result);
+                SetRefreshToken(result.Data);
 
-                return Ok(new { result.AccessToken, refreshToken = result.RefreshSession.Id });
+                return Ok(new { result.Data.AccessToken, refreshToken = result.Data.RefreshSession.Id });
             }
 
-            return Unauthorized(result.AuthenticationResult.Errors);
+            AddModelErrors(result.Errors);
+
+            return Unauthorized(ModelState.GenerateValidation());
         }
 
         [HttpPost]
@@ -59,14 +64,16 @@ namespace VeeMessanger.WebApi.Controllers
         {
             var result = await authenticationService.LoginAsync(userDto.UserName, userDto.Password, userDto.FingerPrint);
 
-            if (result.AuthenticationResult.Succeeded)
+            if (result.Succeeded)
             {
-                SetRefreshToken(result);
+                SetRefreshToken(result.Data);
 
-                return Ok(new { result.AccessToken, RefreshToken = result.RefreshSession.Id });
+                return Ok(new { result.Data.AccessToken, RefreshToken = result.Data.RefreshSession.Id });
             }
 
-            return Unauthorized(result.AuthenticationResult.Errors);
+            AddModelErrors(result.Errors);
+
+            return Unauthorized(ModelState.GenerateValidation());
         }
 
         [HttpPost]
@@ -84,6 +91,8 @@ namespace VeeMessanger.WebApi.Controllers
 
             if (result.Succeeded)
             {
+                DeleteRefheshToken();
+
                 return Ok();
             }
 
@@ -103,17 +112,21 @@ namespace VeeMessanger.WebApi.Controllers
 
             var result = await authenticationService.RefreshSessionAsync(new Guid(refreshToken), refreshTokensDto.FingerPrint);
 
-            if (result.AuthenticationResult.Succeeded)
+            if (result.Succeeded)
             {
-                SetRefreshToken(result);
+                SetRefreshToken(result.Data);
 
-                return Ok(new { result.AccessToken, refreshToken = result.RefreshSession.Id });
+                return Ok(new { result.Data.AccessToken, refreshToken = result.Data.RefreshSession.Id });
             }
 
-            return Unauthorized(result.AuthenticationResult.Errors);
+            DeleteRefheshToken();
+
+            AddModelErrors(result.Errors);
+
+            return Unauthorized(ModelState.GenerateValidation());
         }
 
-        private void SetRefreshToken(AuthenticationResultWithTokens result)
+        private void SetRefreshToken(TokensDto result)
         {
             var cookieOptions = new CookieOptions
             {
@@ -122,6 +135,19 @@ namespace VeeMessanger.WebApi.Controllers
             };
 
             Response.Cookies.Append("refreshToken", result.RefreshSession.Id.ToString(), cookieOptions);
+        }
+
+        private void DeleteRefheshToken()
+        {
+            Response.Cookies.Delete("refreshToken");
+        }
+
+        private void AddModelErrors(IEnumerable<Error> authenticationErrors)
+        {
+            foreach (var error in authenticationErrors)
+            {
+                ModelState.TryAddModelError(error.Code, error.Description);
+            }
         }
     }
 }

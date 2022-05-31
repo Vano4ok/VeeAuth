@@ -17,7 +17,6 @@ namespace VeeMessenger.Domain.FluentValidation.User
                 .NotNull()
                 .EmailAddress();
 
-
             RuleFor(user => user.Password)
                 .NotNull()
                 .NotEmpty();
