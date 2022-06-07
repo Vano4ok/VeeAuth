@@ -1,5 +1,5 @@
 # VeeAuth
-This project is a implementation of authentication with JWT access token and refresh session.
+This project is an implementation of authentication with JWT access token and refresh session.
 ## Installation
 ### Required to install
 - Asp.Net Core 6
